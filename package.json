@@ -10,7 +10,7 @@
   ],
   "repository": {
     "type": "git",
-    "url": "git://github.com/skrollme/homebridge-denon-marantz-avr.git",
+    "url": "git://github.com/skrollme/homebridge-denon-marantz-avr.git"
   },
   "bugs": {
     "url": "http://github.com/skrollme/homebridge-denon-marantz-avr/issues"

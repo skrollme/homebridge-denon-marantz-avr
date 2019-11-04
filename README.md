@@ -11,7 +11,7 @@ Apples Home App currently doesn't support the Speaker Service. To use this servi
 # Installation
 Follow the instruction in [NPM](https://www.npmjs.com/package/homebridge) for the homebridge server installation. The plugin is published through [NPM](https://www.npmjs.com/package/homebridge-denon) and should be installed "globally" by typing:
 
-    sudo npm install -g homebridge-denon
+    sudo npm install -g homebridge-denon-x
 
 # Configuration
 

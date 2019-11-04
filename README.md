@@ -1,3 +1,7 @@
+[![npm](https://img.shields.io/npm/v/homebridge-denon-x.svg?style=plastic)](https://www.npmjs.com/package/homebridge-denon-x)
+[![npm](https://img.shields.io/npm/dt/homebridge-denon-x.svg?style=plastic)](https://www.npmjs.com/package/homebridge-denon-x)
+[![GitHub last commit](https://img.shields.io/github/last-commit/skrollme/homebridge-denon-marantz-avr.svg?style=plastic)](https://github.com/skrollme/homebridge-denon-marantz-avr)
+
 # Homebridge-Denon-Marantz-AVR
 homebridge-plugin for Denon and Marantz AVR control with Apple-Homekit. Works with most Denon AVR since 2011.
 
@@ -75,3 +79,9 @@ Setting the default input and the default volume is optional. The available inpu
 ### notes
 If you are interested in setting the volume of your receiver with Siri than [this](https://github.com/robertvorthman/homebridge-marantz-volume) plugin might be a good addition. Only remember to not tell Siri "Set the light in the Living room to 100 %" ;)
 homebridge-marantz-volume was written by Robert Vorthman (thanks!)
+
+## what else
+
+Like this and want to express your feelings? Please buy me a beer :beers: ...
+
+[![Donate](https://img.shields.io/badge/Donate-PayPal-blue.svg)](https://www.paypal.me/skroll)

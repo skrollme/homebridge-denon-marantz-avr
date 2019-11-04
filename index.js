@@ -34,6 +34,9 @@ function DenonAVRAccessory(log, config) {
 	
 	this.setAttempt = 0;
 	this.state = false;
+	this.volume = this.defaultVolume;
+	this.mute = false
+
 	if (this.interval < 10 && this.interval > 100000) {
 		this.log("polling interval out of range.. disabled polling");
 		this.doPolling = false;
@@ -43,27 +46,60 @@ function DenonAVRAccessory(log, config) {
 	if (this.doPolling) {
 		that.log("start polling..");
 		var statusemitter = pollingtoevent(function(done) {
-			that.log("do poll..")
+			that.log.debug("do poll state..")
 			that.getPowerState( function( error, response) {
 				done(error, response, this.setAttempt);
 			}, "statuspoll");
-		}, {longpolling:true,interval:that.pollingInterval * 1000,longpollEventName:"statuspoll"});
+		}, {longpolling: true, interval: that.pollingInterval * 1000, longpollEventName: "statuspoll"});
 
 		statusemitter.on("statuspoll", function(data) {
 			that.state = data;
-			that.log("poll end, state: "+data);
+			that.log.debug("poll state end, state: "+data);
 			
 			if (that.switchService ) {
 				that.switchService.getCharacteristic(Characteristic.On).updateValue(that.state, null, "statuspoll");
 			}
 		});
+
+
+        var statusemitterVolume = pollingtoevent(function(done) {
+            that.log.debug("do poll vol..")
+            that.getVolume( function( error, response) {
+                done(error, response, this.setAttempt);
+            }, "statuspollVolume");
+        }, {longpolling: true, interval: that.pollingInterval * 1000, longpollEventName: "statuspollVolume"});
+
+        statusemitterVolume.on("statuspollVolume", function(data) {
+            that.volume = data;
+            that.log.debug("poll vol end, vol: "+data);
+
+            if (that.switchService) {
+                that.switchService.getCharacteristic(Characteristic.Volume).updateValue(that.volume, null, "statuspollVolume");
+            }
+        });
+
+
+        var statusemitterMute = pollingtoevent(function(done) {
+            that.log.debug("do poll mute..")
+            that.getMuteState( function( error, response) {
+                done(error, response, this.setAttempt);
+            }, "statuspollMute");
+        }, {longpolling: true, interval: that.pollingInterval * 1000, longpollEventName: "statuspollMute"});
+
+        statusemitterMute.on("statuspollMute", function(data) {
+            that.mute = data;
+            that.log.debug("poll mute end, mute: "+data);
+
+            if (that.switchService) {
+                that.switchService.getCharacteristic(Characteristic.Mute).updateValue(that.mute, null, "statuspollMute");
+            }
+        });
 	}
 }
 
 
 DenonAVRAccessory.prototype.getPowerState = function (callback, context) {
-	
-	if ((!context || context != "statuspoll") && this.doPolling) {
+    if ((!context || context != "statuspoll") && this.doPolling) {
 		callback(null, this.state);
 	} else {
 	    this.denon.getPowerState(function (err, state) {
@@ -71,7 +107,9 @@ DenonAVRAccessory.prototype.getPowerState = function (callback, context) {
 	            this.log(err);
 	            callback(null, false);
 	        } else {
-				this.log('current power state is: %s', (state) ? 'ON' : 'OFF');
+	            if(this.state != state) {
+                    this.log('current power state is: %s', (state) ? 'ON' : 'OFF');
+                }
 				callback(null, state);
 	        }
 	    }.bind(this));
@@ -87,8 +125,6 @@ DenonAVRAccessory.prototype.setPowerState = function (powerState, callback, cont
 		callback(null, powerState);
 	    return;
 	}
-	
-	this.setAttempt = this.setAttempt+1;
 	
     this.denon.setPowerState(powerState, function (err, state) {
         if (err) {
@@ -119,24 +155,41 @@ DenonAVRAccessory.prototype.setPowerState = function (powerState, callback, cont
     callback(null);
 };
 
-DenonAVRAccessory.prototype.getVolume = function (callback) {
-    this.denon.getVolume(function (err, volume) {
-        if (err) {
-            this.log('get Volume error: ' + err)
-            callback(err);
-        } else {
-            this.log('current volume is: ' + volume);
-            var pVol = Math.round(volume / this.maxVolume * 100);
-            callback(null, pVol);
-        }
-    }.bind(this))
+
+DenonAVRAccessory.prototype.getVolume = function (callback, context) {
+    if ((!context || context != "statuspollVolume") && this.doPolling) {
+        callback(null, this.volume);
+    } else {
+        this.denon.getVolume(function (err, volume) {
+            if (err) {
+                this.log('get Volume error: ' + err)
+                callback(err);
+            } else {
+                var pVol = Math.round(volume / this.maxVolume * 100);
+                if(this.volume != pVol) {
+                    this.log('current volume is: ' + pVol);
+                }
+
+                callback(null, pVol);
+            }
+        }.bind(this))
+    }
 };
 
-DenonAVRAccessory.prototype.setVolume = function (pVol, callback) {
+DenonAVRAccessory.prototype.setVolume = function (pVol, callback, context) {
+    var that = this;
+
+    //if context is statuspoll, then we need to ensure that we do not set the actual value
+    if (context && context == "statuspollVolume") {
+        callback(null, pVol);
+        return;
+    }
+
     var volume = Math.round(pVol / 100 * this.maxVolume);
     this.denon.setVolume(volume, function (err) {
         if (err) {
             this.log('set Volume error: ' + err);
+            callback(err);
         } else {
             this.log('set Volume to: ' + volume);
             callback(null);
@@ -144,7 +197,35 @@ DenonAVRAccessory.prototype.setVolume = function (pVol, callback) {
     }.bind(this))
 };
 
-DenonAVRAccessory.prototype.setMuteState = function (state, callback) {
+
+DenonAVRAccessory.prototype.getMuteState = function (callback, context) {
+    if ((!context || context != "statuspollMute") && this.doPolling) {
+        callback(null, this.mute);
+    } else {
+        this.denon.getMuteState(function (err, state) {
+            if (err) {
+                this.log('get mute error: ' + err);
+                callback(err, false);
+            } else {
+                if(this.mute != state) {
+                    this.log('current mutestate is: ' + state);
+                }
+
+                callback(null, state);
+            }
+        }.bind(this))
+    }
+};
+
+DenonAVRAccessory.prototype.setMuteState = function (state, callback, context) {
+    var that = this;
+
+    //if context is statuspoll, then we need to ensure that we do not set the actual value
+    if (context && context == "statuspollMute") {
+        callback(null, state);
+        return;
+    }
+
     this.denon.setMuteState(state, function (err) {
         if (err) {
             this.log('set mute error: ' + err);
@@ -153,17 +234,6 @@ DenonAVRAccessory.prototype.setMuteState = function (state, callback) {
             callback(null);
         }
     }.bind(this));
-};
-
-DenonAVRAccessory.prototype.getMuteState = function (callback) {
-    this.denon.getMuteState(function (err, state) {
-        if (err) {
-            this.log('get mute error: ' + err);
-            callback(err);
-        } else {
-            callback(state);
-        }
-    }.bind(this))
 };
 
 DenonAVRAccessory.prototype.getServices = function () {

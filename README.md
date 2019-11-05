@@ -2,11 +2,10 @@
 [![npm](https://img.shields.io/npm/dt/homebridge-denon-x.svg?style=plastic)](https://www.npmjs.com/package/homebridge-denon-x)
 [![GitHub last commit](https://img.shields.io/github/last-commit/skrollme/homebridge-denon-marantz-avr.svg?style=plastic)](https://github.com/skrollme/homebridge-denon-marantz-avr)
 
-# Homebridge-Denon-Marantz-AVR
+# Homebridge-Denon-Marantz-AVR-X
 homebridge-plugin for Denon and Marantz AVR control with Apple-Homekit. Works with most Denon AVR since 2011.
 
-> With version 0.2.0 this plugin use the new speaker service (>= iOS  10). Please ensure your hap-nodejs and homebridge versions are up-to-date.
-Apples Home App currently doesn't support the Speaker Service. To use this service you can use a non official app like Elgato Eve.
+**This is a fork of [homebridge-denon-marantz-avr](https://github.com/stfnhmplr/homebridge-denon-marantz-avr) before it was refactored to work as a platform-plugin. For me (Marantz NR-1506 AVR) this versions (0.4) did not work very well, so I forked and continued at a state which worked for me.**
 
 # Installation
 Follow the instruction in [NPM](https://www.npmjs.com/package/homebridge) for the homebridge server installation. The plugin is published through [NPM](https://www.npmjs.com/package/homebridge-denon) and should be installed "globally" by typing:

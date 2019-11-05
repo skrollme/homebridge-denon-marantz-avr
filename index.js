@@ -102,17 +102,22 @@ DenonAVRAccessory.prototype.getPowerState = function (callback, context) {
     if ((!context || context != "statuspoll") && this.doPolling) {
 		callback(null, this.state);
 	} else {
-	    this.denon.getPowerState(function (err, state) {
-	        if (err) {
-	            this.log(err);
-	            callback(null, false);
-	        } else {
-	            if(this.state != state) {
-                    this.log('current power state is: %s', (state) ? 'ON' : 'OFF');
+        try {
+            this.denon.getPowerState(function (err, state) {
+                if (err) {
+                    this.log('get state error: ' + err)
+                    callback(null, false);
+                } else {
+                    if (this.state != state) {
+                        this.log('current power state is: %s', (state) ? 'ON' : 'OFF');
+                    }
+                    callback(null, state);
                 }
-				callback(null, state);
-	        }
-	    }.bind(this));
+            }.bind(this));
+        } catch (e) {
+            this.log('get state error 2: ' + e)
+            callback(e, false);
+        }
 	}
 };
 
@@ -160,19 +165,24 @@ DenonAVRAccessory.prototype.getVolume = function (callback, context) {
     if ((!context || context != "statuspollVolume") && this.doPolling) {
         callback(null, this.volume);
     } else {
-        this.denon.getVolume(function (err, volume) {
-            if (err) {
-                this.log('get Volume error: ' + err)
-                callback(err);
-            } else {
-                var pVol = Math.round(volume / this.maxVolume * 100);
-                if(this.volume != pVol) {
-                    this.log('current volume is: ' + pVol);
-                }
+        try {
+            this.denon.getVolume(function (err, volume) {
+                if (err) {
+                    this.log('get Volume error: ' + err)
+                    callback(err);
+                } else {
+                    var pVol = Math.round(volume / this.maxVolume * 100);
+                    if (this.volume != pVol) {
+                        this.log('current volume is: ' + pVol);
+                    }
 
-                callback(null, pVol);
-            }
-        }.bind(this))
+                    callback(null, pVol);
+                }
+            }.bind(this))
+        } catch (e) {
+            this.log('get Volume error 2: ' + e)
+            callback(e, 0);
+        }
     }
 };
 
@@ -202,18 +212,23 @@ DenonAVRAccessory.prototype.getMuteState = function (callback, context) {
     if ((!context || context != "statuspollMute") && this.doPolling) {
         callback(null, this.mute);
     } else {
-        this.denon.getMuteState(function (err, state) {
-            if (err) {
-                this.log('get mute error: ' + err);
-                callback(err, false);
-            } else {
-                if(this.mute != state) {
-                    this.log('current mutestate is: ' + state);
-                }
+        try {
+            this.denon.getMuteState(function (err, state) {
+                if (err) {
+                    this.log('get mute error: ' + err);
+                    callback(err, false);
+                } else {
+                    if(this.mute != state) {
+                        this.log('current mutestate is: ' + state);
+                    }
 
-                callback(null, state);
-            }
-        }.bind(this))
+                    callback(null, state);
+                }
+            }.bind(this))
+        } catch (e) {
+            this.log('get mute error 2: ' + e)
+            callback(e, false);
+        }
     }
 };
 
